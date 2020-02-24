@@ -1,4 +1,32 @@
 ---
+### Managing firewall rules.
+##
+## For better maintainability, the group list is built during runtime by
+## combining all lists together. This will provide the freedom of declaring
+## custom group lists for granular control. The lists require a naming
+## convention by using a pattern. The pattern is rendered as a single list
+## which can be used for iteration with variable: 'role_iptables_rule_list'
+## The list name pattern needs to start with: 'role_iptables_rule_list_'
 
+role_iptables_rule_list_generic_header_section: []
+
+role_iptables_rule_list_host_specific_section: []
+
+role_iptables_rule_list_host_generic_section: []
+
+## Example of a list for default inheritance:
+# role_iptables_rule_list_generic_header_section:
+#   - comment: Generic header section
+#   - comment: Base policy
+#     rules:
+#       - '*filter'
+#       - ':INPUT DROP [0:0]'
+#       - ':FORWARD DROP [0:0]'
+#       - ':OUTPUT ACCEPT [0:0]'
+#   - comment: Allow all internal traffic on the loopback device
+#     rules: '-A INPUT -i lo -j ACCEPT'
+
+## More examples at: 'molecule/default/vars/vars_iptables_rules.yml'
+## This file is used to verify tests with and contains some possible variants.
 
 ...
