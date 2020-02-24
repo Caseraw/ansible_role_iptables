@@ -1,0 +1,35 @@
+---
+- name: Verify
+  hosts: all
+  become: True
+  gather_facts: False
+  tasks:
+    - name: Gather package facts
+      package_facts:
+        manager: auto
+
+    - name: Gather service facts
+      service_facts:
+
+    - name: Ensure iptables is installed
+      fail:
+        msg: Package 'iptables' is not installed
+      when: "'iptables' not in ansible_facts.packages"
+
+    - name: Ensure iptables service is enabled and running
+      fail:
+        msg: Service 'iptables' is not running and/or enabled
+      when:
+        - ansible_facts.services["iptables.service"].state != "running"
+        - ansible_facts.services["iptables.service"].status != "enabled"
+
+    - name: Run command | list all chains and rules | part 1
+      command: iptables -xnL --line-numbers
+      register: role_iptables_get_services_command
+      changed_when: False
+
+    - name: Show output | list all chains and rules | part 2
+      debug:
+        msg: "{{ role_iptables_get_services_command.stdout.split('\n') }}"
+
+...

@@ -1,0 +1,54 @@
+---
+- name: Unarm firewalld | part 1 | Gather package facts
+  package_facts:
+    manager: auto
+
+- name: Unarm firewalld | part 2 | Ensure firewalld is stopped and disabled
+  systemd:
+    name: firewalld
+    state: stopped
+    enabled: False
+    daemon_reload: True
+  when: "'firewalld' in ansible_facts.packages"
+
+- name: Unarm firewalld | part 3 | Ensure firewalld is masked
+  systemd:
+    name: firewalld
+    masked: True
+  when: "'firewalld' in ansible_facts.packages"
+
+- name: Arm iptables | part 1 | Ensure iptables is installed
+  package:
+    name: '{{ role_iptables_required_packages }}'
+    state: present
+  notify: start_restart_iptables
+
+- name: Arm iptables | part 2 | Gather service facts
+  service_facts:
+
+- name: Arm iptables | part 3 | Ensure iptables service is enabled and running
+  systemd:
+    name: iptables
+    state: started
+    enabled: True
+    masked: False
+    daemon_reload: True
+    no_block: True
+  when: ansible_facts.services["iptables.service"].state is not match("running")
+  notify: start_restart_iptables
+
+- name: Populate iptables rule list
+  set_fact:
+    role_iptables_rule_list: '{{ role_iptables_rule_list | default([]) + vars[item] }}'
+  loop: "{{ vars.keys() | select('match', '^role_iptables_rule_list_.*$') | list }}"
+
+- name: Set iptables rules
+  template:
+    src: iptables.j2
+    dest: '{{ role_iptables_remote_path_iptables }}'
+    owner: root
+    group: root
+    mode: '0600'
+  notify: start_restart_iptables
+
+...

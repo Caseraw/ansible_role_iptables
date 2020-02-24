@@ -1,0 +1,75 @@
+---
+role_iptables_rule_list_generic_header_section:
+  - comment: Generic header section
+  - comment: Base policy
+    rules:
+      - '*filter'
+      - ':INPUT DROP [0:0]'
+      - ':FORWARD DROP [0:0]'
+      - ':OUTPUT ACCEPT [0:0]'
+  - comment: Allow all internal traffic on the loopback device
+    rules: '-A INPUT -i lo -j ACCEPT'
+  - comment: Continue all established or related connections
+    rules: '-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT'
+  - comment: Drop all inbound non-conforming packets, such as malformed headers, etc.
+    rules: '-A INPUT -m conntrack --ctstate INVALID -j DROP'
+  - comment: Drop all inbound remote packets claiming to be from a loopback address
+    rules: '-A INPUT -s 127.0.0.0/8 ! -i lo -j DROP'
+  - comment: Drop all inbound packets to a broadcast, multicast or anycast address
+    rules:
+      - '-A INPUT -m addrtype --dst-type BROADCAST -j DROP'
+      - '-A INPUT -m addrtype --dst-type MULTICAST -j DROP'
+      - '-A INPUT -m addrtype --dst-type ANYCAST -j DROP'
+      - '-A INPUT -d 224.0.0.0/4 -j DROP'
+  - comment: Prevent SSH bruteforce attacks
+    rules:
+      - '-N SSHBRUTE'
+      - '-A SSHBRUTE -m recent --name SSH --set'
+      - '-A SSHBRUTE -m recent --name SSH --update --seconds 300 --hitcount 10 -m limit --limit 1/second --limit-burst 100 -j LOG --log-prefix "iptables[SSH-brute]: "'
+      - '-A SSHBRUTE -m recent --name SSH --update --seconds 300 --hitcount 10 -j DROP'
+      - '-A SSHBRUTE -j ACCEPT'
+  - comment: Prevent PING flooding
+    rules:
+      - '-N ICMPFLOOD'
+      - '-A ICMPFLOOD -m recent --set --name ICMP --rsource'
+      - '-A ICMPFLOOD -m recent --update --seconds 1 --hitcount 6 --name ICMP --rsource --rttl -m limit --limit 1/sec --limit-burst 1 -j LOG --log-prefix "iptables[ICMP-flood]: "'
+      - '-A ICMPFLOOD -m recent --update --seconds 1 --hitcount 6 --name ICMP --rsource --rttl -j DROP'
+      - '-A ICMPFLOOD -j ACCEPT'
+
+role_iptables_rule_list_host_specific_section:
+  - comment: Host specific section
+  - comment: Allow inbound TCP connections
+    rules: '-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT'
+  - comment: TCP sessions should begin with SYN
+    rules: '-A INPUT -p tcp ! --syn -m state --state NEW -j DROP'
+  - comment: Allow outbound packets
+    rules:
+      - '-I OUTPUT 1 -m state --state RELATED,ESTABLISHED -j ACCEPT'
+      - '-A OUTPUT -p udp --dport 53 -m state --state NEW -j ACCEPT'
+
+role_iptables_rule_list_host_generic_section:
+  - comment: Host generic section
+  - comment: Allow inbound SSH, use SSHBRUTE chain to prevent brute-force attacks
+    rules: '-A INPUT -p tcp --dport 22 --syn -m conntrack --ctstate NEW -j SSHBRUTE'
+  - comment: Permit useful IMCP packet types
+    rules:
+      - '-A INPUT -p icmp --icmp-type 0  -m conntrack --ctstate NEW -j ACCEPT'
+      - '-A INPUT -p icmp --icmp-type 3  -m conntrack --ctstate NEW -j ACCEPT'
+      - '-A INPUT -p icmp --icmp-type 8  -m conntrack --ctstate NEW -j ICMPFLOOD'
+      - '-A INPUT -p icmp --icmp-type 11 -m conntrack --ctstate NEW -j ACCEPT'
+  - comment: Drop packets to ports used by SMB
+    rules:
+      - '-A INPUT -p udp -m multiport --dports 135,445 -j DROP'
+      - '-A INPUT -p udp --dport 137:139 -j DROP'
+      - '-A INPUT -p udp --sport 137 --dport 1024:65535 -j DROP'
+      - '-A INPUT -p tcp -m multiport --dports 135,139,445 -j DROP'
+  - comment: Drop packets to port used by UPnP protocol.
+    rules: '-A INPUT -p udp --dport 1900 -j DROP'
+  - comment: Drop late replies from nameservers
+    rules: '-A INPUT -p udp --sport 53 -j DROP'
+  - comment: Explicitly reject AUTH traffic so it fails fast
+    rules: '-A INPUT -p tcp --dport 113 --syn -m conntrack --ctstate NEW -j REJECT --reject-with tcp-reset'
+  - comment: Prevent log flooding with limits
+    rules: '-A INPUT -m limit --limit 1/second --limit-burst 100 -j LOG --log-prefix "iptables[DOS]: "'
+
+...

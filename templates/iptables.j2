@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+{% for item in role_iptables_rule_list %}
+{% if item.comment is defined and item.comment is string %}
+# {{ item.comment }}
+{% endif %}
+{% if item.rules is defined and item.rules is iterable and item.rules is not string %}
+{% for rule in item.rules %}
+{{ rule }}
+{% endfor %}
+{% elif item.rules is defined %}
+{{ item.rules }}
+{% endif %}
+
+{% endfor %}
+COMMIT

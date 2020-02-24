@@ -1,0 +1,12 @@
+---
+- name: Converge
+  hosts: all
+  become: True
+  gather_facts: False
+  vars_files:
+    - vars/vars_iptables_rules.yml
+  roles:
+    # - role: ansible_role_firewalld
+    - role: ansible_role_iptables
+
+...

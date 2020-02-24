@@ -1,0 +1,12 @@
+---
+- name: Ensure iptables is started/restarted and enabled
+  systemd:
+    name: iptables
+    state: restarted
+    enabled: True
+    masked: False
+    daemon_reload: True
+    no_block: True
+  listen: start_restart_iptables
+
+...

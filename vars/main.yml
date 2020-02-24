@@ -1,0 +1,10 @@
+---
+role_iptables_required_packages:
+  - iptables
+  - iptables-services
+  - iptables-utils
+
+role_iptables_remote_path_iptables: /etc/sysconfig/iptables
+role_iptables_remote_path_ip6tables: /etc/sysconfig/ip6tables
+
+...
