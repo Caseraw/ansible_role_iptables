@@ -2,6 +2,8 @@
 
 Manage the installation and configuration of the host based firewall with **iptables**.
 
+[![Build Status](https://travis-ci.org/Caseraw/ansible_role_iptables.svg?branch=master)](https://travis-ci.org/Caseraw/ansible_role_iptables) [<img src="https://img.shields.io/ansible/role/46812">](https://galaxy.ansible.com/caseraw/ansible_role_iptables) [<img src="https://img.shields.io/ansible/role/d/46812">](https://galaxy.ansible.com/caseraw/ansible_role_iptables) [<img src="https://img.shields.io/ansible/quality/46812">](https://galaxy.ansible.com/caseraw/ansible_role_iptables)
+
 - [Ansible role iptables](#ansible-role-iptables)
   - [License](#license)
   - [Author Information](#author-information)
@@ -69,7 +71,8 @@ Compatible with the following list of operating systems:
 ## Useful shell commands
 
 ```shell
-...
+iptables -xnL
+lsof -RPni
 ```
 
 ## Additional documentation resources
