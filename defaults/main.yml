@@ -1,4 +1,14 @@
 ---
+### Software packages required for installing iptables.
+role_iptables_required_packages:
+  - iptables
+  - iptables-services
+  - iptables-utils
+
+### Paths to the remote configuration files.
+role_iptables_remote_path_iptables: /etc/sysconfig/iptables
+role_iptables_remote_path_ip6tables: /etc/sysconfig/ip6tables
+
 ### Managing firewall rules.
 ##
 ## For better maintainability, the group list is built during runtime by
