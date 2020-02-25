@@ -54,6 +54,9 @@ Compatible with the following list of operating systems:
 | Variable name | Description |
 |---------------|-------------|
 | role_iptables_required_packages | List of required packages. |
+| role_iptables_remote_path_iptables | Path to the remote iptables rules configuration file. |
+| role_iptables_remote_path_ip6tables | Path to the remote ip6tables rules configuration file. |
+| role_iptables_rule_list | Combined list of other lists that start with the name `role_iptables_rule_list_`. Examples at: [molecule/default/vars/vars_firewalld_rules.yml](molecule/default/vars/vars_iptables_rules.yml) |
 
 ## Example Playbook
 
